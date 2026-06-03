@@ -47,6 +47,7 @@
         </div>
         <div id="end-screen" class="screen" style="display:none;">
             <h1>¡TIEMPO!</h1>
+            <p id="final-pts" style="font-size: 12px;"></p>
             <button onclick="location.reload()">REINTENTAR</button>
         </div>
     </div>
@@ -60,6 +61,8 @@
         let score = 0, timeLeft = 60, gameActive = false;
         const view = document.getElementById('game-view');
         const bgList = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg'];
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
 
         function spawnKanban() {
             if(!gameActive || document.querySelectorAll('.kanban-card').length >= 4) return;
@@ -83,7 +86,7 @@
                 const mRect = document.getElementById('mailbox').getBoundingClientRect();
                 if(cRect.right > mRect.left && cRect.left < mRect.right && cRect.bottom > mRect.top && cRect.top < mRect.bottom) {
                     score += 100;
-                    document.getElementById('score').innerText = score;
+                    scoreEl.innerText = score;
                     card.remove();
                     spawnKanban();
                 }
@@ -117,11 +120,15 @@
             for(let i=0; i<4; i++) spawnKanban();
 
             let timer = setInterval(() => {
-                if(--timeLeft <= 0) { 
-                    clearInterval(timer); gameActive = false; 
+                if(!gameActive) return;
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if(timeLeft <= 0) { 
+                    clearInterval(timer); 
+                    gameActive = false; 
                     document.getElementById('end-screen').style.display = 'flex';
+                    document.getElementById('final-pts').innerText = "PUNTAJE FINAL: " + score;
                 }
-                document.getElementById('timer').innerText = timeLeft;
                 if(timeLeft === 20) view.classList.add('panic-mode');
             }, 1000);
         };
