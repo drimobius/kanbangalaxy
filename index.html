@@ -2,136 +2,255 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KTMEX Kanban Challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTMEX Kanban Challenge - Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root { --arcade-blue: #00aaff; --arcade-yellow: #f4d03f; --arcade-red: #ff4444; }
-        body { margin: 0; background: #1a1a1a; color: white; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; overflow: hidden; touch-action: none; }
+        body { margin: 0; padding: 0; background: #1a1a1a; color: white; font-family: 'Press Start 2P', cursive; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
         
         #game-view { 
-            position: relative; width: 95vw; max-width: 800px; aspect-ratio: 16 / 9; 
-            margin-top: 10px; border: 4px solid #444; background: #2c3e50;
-            background-size: cover; background-position: center; overflow: hidden;
-            transition: border-color 0.3s;
+            position: relative; 
+            width: 95vw; 
+            max-width: 1200px; 
+            aspect-ratio: 16 / 9; 
+            margin-top: 20px; 
+            border: 6px solid #444; 
+            background: #2c3e50; 
+            background-size: cover; 
+            background-position: center; 
+            overflow: hidden; 
+            transition: all 0.3s ease;
         }
 
-        #ui-layer { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 10px; box-sizing: border-box; background: rgba(0, 0, 0, 0.7); z-index: 100; font-size: 10px; }
-        #mailbox { position: absolute; bottom: 5%; right: 5%; width: 20%; aspect-ratio: 1; background: url('mailbox.png') no-repeat center/contain; z-index: 10; }
-        
-        .kanban-card { position: absolute; width: 15%; aspect-ratio: 1.6/1; background: url('kanban.png') no-repeat center/contain; z-index: 50; touch-action: none; cursor: grab; }
+        /* MASCOTA FUERA DEL CANVAS */
+        #tm-mascot { 
+            position: fixed; 
+            width: 450px;  
+            height: 450px; 
+            bottom: 10px;  
+            left: 10px;    
+            background: url('tms.png') no-repeat center/contain; 
+            z-index: 1000; 
+            pointer-events: none; 
+        }
+
+        #ui-layer { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 20px 40px; box-sizing: border-box; background: rgba(0, 0, 0, 0.7); z-index: 100; font-size: 14px; }
+        #mailbox { position: absolute; bottom: 1%; right: 1%; width: 400px; height: 380px; background: url('mailbox.png') no-repeat center/contain; z-index: 10; transition: transform 0.1s; }
+        .kanban-card { position: absolute; width: 160px; height: 100px; background: url('kanban.png') no-repeat center/contain; cursor: grab; z-index: 50; filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.6)); }
         
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
-        input { padding: 10px; font-family: 'Press Start 2P'; font-size: 14px; width: 70%; border: 4px solid var(--arcade-blue); background: #000; color: #fff; text-align: center; }
-        button { padding: 15px; font-family: 'Press Start 2P'; background: var(--arcade-blue); color: white; border: none; margin-top: 20px; font-size: 12px; }
+        input { padding: 15px; font-family: 'Press Start 2P'; font-size: 16px; margin: 20px; border: 4px solid var(--arcade-blue); background: #000; color: #fff; text-align: center; }
+        button { padding: 20px 40px; font-family: 'Press Start 2P'; background: var(--arcade-blue); color: white; border: none; cursor: pointer; font-size: 14px; border-radius: 5px; }
+        button:hover { background: var(--arcade-yellow); color: #000; }
         
-        #leaderboard-area { width: 95vw; max-width: 800px; background: #222; border: 2px solid var(--arcade-blue); padding: 10px; margin-top: 10px; }
-        table { width: 100%; font-size: 9px; }
-        .panic-mode { border-color: var(--arcade-red) !important; }
+        #leaderboard-area { margin-top: 20px; width: 95vw; max-width: 1200px; background: #222; border: 2px solid var(--arcade-blue); padding: 15px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { color: var(--arcade-yellow); padding-bottom: 10px; }
+        td { text-align: center; padding: 10px; border-bottom: 1px solid #444; }
+
+        /* Estilo para el modo pánico */
+        .panic-mode { border-color: var(--arcade-red) !important; box-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
     </style>
 </head>
 <body>
 
-    <h2 style="color: var(--arcade-blue); margin: 5px;">KANBAN GALAXY</h2>
+    <h2 style="color: var(--arcade-blue); margin: 10px;">KANBAN GALAXY </h2>
+
+    <div id="tm-mascot"></div>
+
     <div id="game-view">
         <div id="ui-layer">
             <div>ID: <span id="id-tag">---</span></div>
-            <div>SC: <span id="score">0</span></div>
-            <div>T: <span id="timer">60</span>s</div>
+            <div>SCORE: <span id="score">0</span></div>
+            <div>TIME: <span id="timer" style="transition: color 0.3s;">60</span>s</div>
         </div>
+
         <div id="mailbox"></div>
+
         <div id="start-screen" class="screen">
-            <h1>NUEVA PARTIDA</h1>
+            <h1 style="color: var(--arcade-yellow)">NUEVA PARTIDA</h1>
+            <p style="font-size: 10px;">INGRESA NÚMERO DE EMPLEADO:</p>
             <input type="number" id="emp-id" placeholder="ID">
-            <button id="btn-start">INICIAR</button>
+            <button id="btn-start">INICIAR JUEGO</button>
         </div>
+
         <div id="end-screen" class="screen" style="display:none;">
             <h1>¡TIEMPO!</h1>
-            <p id="final-pts" style="font-size: 12px;"></p>
+            <p id="final-pts"></p>
             <button onclick="location.reload()">REINTENTAR</button>
         </div>
     </div>
 
     <div id="leaderboard-area">
-        <h3 style="text-align: center; font-size: 10px;">TOP 3 KTMEXOS</h3>
-        <table><tbody id="lb-data"></tbody></table>
+        <h3 style="text-align: center; font-size: 14px;">🏆 TOP 3 KTMEXOS 🏆</h3>
+        <table>
+            <thead><tr><th>RANK</th><th>ID</th><th>SCORE</th></tr></thead>
+            <tbody id="lb-data"></tbody>
+        </table>
     </div>
 
     <script>
-        let score = 0, timeLeft = 60, gameActive = false;
+        let score = 0;
+        let timeLeft = 60;
+        let empId = "";
+        let gameActive = false;
+        let timerId;
+        let bgInterval;
+        let currentBgIndex = 0;
+        let isPanicMode = false;
+        const backgrounds = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg'];
+
         const view = document.getElementById('game-view');
-        const bgList = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg'];
-        const scoreEl = document.getElementById('score');
-        const timerEl = document.getElementById('timer');
+        const timerDisplay = document.getElementById('timer');
+
+        function playCoin() {
+            try {
+                const actx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = actx.createOscillator();
+                const g = actx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(isPanicMode ? 1100 : 900, actx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1400, actx.currentTime + 0.1);
+                g.gain.setValueAtTime(0.05, actx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.1);
+                osc.connect(g); g.connect(actx.destination);
+                osc.start(); osc.stop(actx.currentTime + 0.1);
+            } catch (e) {}
+        }
+
+        document.getElementById('btn-start').onclick = function() {
+            const val = document.getElementById('emp-id').value;
+            if(val.length < 1) { alert("Ingresa tu ID"); return; }
+            empId = val;
+            document.getElementById('id-tag').innerText = empId;
+            document.getElementById('start-screen').style.display = 'none';
+            startGame();
+        };
+
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            timeLeft = 60;
+            isPanicMode = false;
+            
+            view.style.backgroundImage = `url('${backgrounds[0]}')`; 
+            bgInterval = setInterval(() => {
+                if(!gameActive) return;
+                currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
+                view.style.backgroundImage = `url('${backgrounds[currentBgIndex]}')`;
+            }, 20000);
+            
+            spawnKanban();
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft;
+
+                // ACTIVAR CONFUSIÓN / MODO PÁNICO (20 segundos)
+                if(timeLeft === 20 && !isPanicMode) {
+                    isPanicMode = true;
+                    view.classList.add('panic-mode');
+                    timerDisplay.style.color = "#ff4444";
+                    // Llenar la pantalla de tarjetas para causar confusión inicial
+                    for(let i=0; i<3; i++) spawnKanban(); 
+                }
+
+                if(timeLeft <= 0) finishGame();
+            }, 1000);
+        }
 
         function spawnKanban() {
-            if(!gameActive || document.querySelectorAll('.kanban-card').length >= 4) return;
+            if(!gameActive) return;
             
             const card = document.createElement('div');
             card.className = 'kanban-card';
+            // Posiciones más dispersas para mayor confusión
             card.style.left = (Math.random() * 60 + 5) + "%";
             card.style.top = (Math.random() * 50 + 15) + "%";
 
             let isDragging = false;
-            const move = (x, y) => {
-                const rect = view.getBoundingClientRect();
-                card.style.left = (x - rect.left - 40) + 'px';
-                card.style.top = (y - rect.top - 25) + 'px';
+
+            card.onmousedown = (e) => { 
+                if(!gameActive) return;
+                isDragging = true;
+                card.style.zIndex = 1000;
+                card.style.cursor = 'grabbing';
             };
 
-            const end = () => {
+            const moveHandler = (e) => {
+                if(!isDragging || !gameActive) return;
+                const rect = view.getBoundingClientRect();
+                card.style.left = (e.clientX - rect.left - 80) + 'px';
+                card.style.top = (e.clientY - rect.top - 50) + 'px';
+            };
+
+            const upHandler = () => {
                 if(!isDragging) return;
                 isDragging = false;
+                card.style.cursor = 'grab';
+                
                 const cRect = card.getBoundingClientRect();
                 const mRect = document.getElementById('mailbox').getBoundingClientRect();
-                if(cRect.right > mRect.left && cRect.left < mRect.right && cRect.bottom > mRect.top && cRect.top < mRect.bottom) {
+
+                if(cRect.right > mRect.left && cRect.left < mRect.right && 
+                   cRect.bottom > mRect.top && cRect.top < mRect.bottom) {
+                    
                     score += 100;
-                    scoreEl.innerText = score;
+                    document.getElementById('score').innerText = score;
+                    playCoin();
                     card.remove();
-                    spawnKanban();
+                    
+                    const mb = document.getElementById('mailbox');
+                    mb.style.transform = "scale(1.1)";
+                    setTimeout(() => mb.style.transform = "scale(1)", 100);
+
+                    // Lógica de Reposición:
+                    // Si estamos en modo pánico, siempre nos aseguramos de que haya 4 tarjetas
+                    if(isPanicMode) {
+                        const currentCards = document.querySelectorAll('.kanban-card').length;
+                        if(currentCards < 4) {
+                            for(let i=0; i < (4 - currentCards); i++) spawnKanban();
+                        }
+                    } else {
+                        spawnKanban(); // En modo normal solo se repone la que quitaste
+                    }
+                    
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('mouseup', upHandler);
                 }
             };
 
-            card.addEventListener('mousedown', () => isDragging = true);
-            card.addEventListener('touchstart', (e) => { e.preventDefault(); isDragging = true; }, {passive: false});
-            document.addEventListener('mousemove', (e) => { if(isDragging) move(e.clientX, e.clientY); });
-            document.addEventListener('touchmove', (e) => { if(isDragging) { e.preventDefault(); move(e.touches[0].clientX, e.touches[0].clientY); }}, {passive: false});
-            document.addEventListener('mouseup', end);
-            document.addEventListener('touchend', end);
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('mouseup', upHandler);
             view.appendChild(card);
         }
 
-        document.getElementById('btn-start').onclick = () => {
-            const val = document.getElementById('emp-id').value;
-            if(!val) return;
-            document.getElementById('id-tag').innerText = val;
-            document.getElementById('start-screen').style.display = 'none';
-            gameActive = true;
+        function finishGame() {
+            gameActive = false;
+            clearInterval(timerId);
+            clearInterval(bgInterval);
+            view.classList.remove('panic-mode');
+            document.querySelectorAll('.kanban-card').forEach(c => c.remove());
+            document.getElementById('end-screen').style.display = 'flex';
+            document.getElementById('final-pts').innerText = `PUNTAJE: ${score}`;
             
-            let bgIdx = 0;
-            view.style.backgroundImage = `url('${bgList[0]}')`;
-            
-            setInterval(() => {
-                if(!gameActive) return;
-                bgIdx = (bgIdx + 1) % bgList.length;
-                view.style.backgroundImage = `url('${bgList[bgIdx]}')`;
-            }, 10000);
+            let data = JSON.parse(localStorage.getItem('ktmex_scores') || "[]");
+            data.push({id: empId, pts: score});
+            data.sort((a,b) => b.pts - a.pts);
+            localStorage.setItem('ktmex_scores', JSON.stringify(data.slice(0, 10)));
+            showLeaderboard();
+        }
 
-            for(let i=0; i<4; i++) spawnKanban();
-
-            let timer = setInterval(() => {
-                if(!gameActive) return;
-                timeLeft--;
-                timerEl.innerText = timeLeft;
-                if(timeLeft <= 0) { 
-                    clearInterval(timer); 
-                    gameActive = false; 
-                    document.getElementById('end-screen').style.display = 'flex';
-                    document.getElementById('final-pts').innerText = "PUNTAJE FINAL: " + score;
-                }
-                if(timeLeft === 20) view.classList.add('panic-mode');
-            }, 1000);
-        };
+        function showLeaderboard() {
+            const data = JSON.parse(localStorage.getItem('ktmex_scores') || "[]");
+            const body = document.getElementById('lb-data');
+            body.innerHTML = "";
+            data.slice(0, 3).forEach((item, index) => {
+                body.innerHTML += `<tr><td>${index+1}º</td><td>${item.id}</td><td>${item.pts}</td></tr>`;
+            });
+        }
+        showLeaderboard();
     </script>
 </body>
 </html>
